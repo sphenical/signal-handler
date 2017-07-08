@@ -291,7 +291,7 @@ namespace signals {
                         if (bytes != sizeof signum) {
                             throw ReadError {"Cannot read from the signal pipe."};
                         }
-                        else if (signum != ShutdownSignal) {
+                        else if (signum != ShutdownSignal && running_.load ()) {
                             readErrors = 0;
                             Handlers::iterator atHandler = handlers_.find (signum);
 

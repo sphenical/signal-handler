@@ -62,7 +62,7 @@ int main ()
 The executable then has to be linked with the signal handler library.
 
 In order to use the library embedded within your application - this is recommended since
-the library contains of one single source file - you can add the following to your
+the library consists of one single source file - you can add the following to your
 `CMakeLists.txt`, assuming that this repository has been checked out under
 `vendor/signal-handler`:
 
