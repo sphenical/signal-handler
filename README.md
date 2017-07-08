@@ -59,7 +59,7 @@ int main ()
 }
 ```
 
-The executable then has to be linked with the signal handler library.
+The executable has to be linked with the signal handler library.
 
 In order to use the library embedded within your application - this is recommended since
 the library consists of one single source file - you can add the following to your
@@ -73,7 +73,8 @@ add_subdirectory (vendor/signal-handler)
 
 ...
 # For instance an application myapp:
-include_directories (SYSTEM vendor/signal-handler/src)
+include_directories (SYSTEM
+    ${CMAKE_SOURCE_DIR}/vendor/signal-handler/src)
 add_executable (myapp
     ${MyApp_SOURCES})
 ..

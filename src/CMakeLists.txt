@@ -19,8 +19,7 @@ set (SIGNALHANDLER_INSTALL_HEADERS
 #####################
 include_directories (SYSTEM
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${SQLITE3_INCLUDE_DIRS})
+    ${CMAKE_CURRENT_BINARY_DIR})
 
 #########
 # Targets
