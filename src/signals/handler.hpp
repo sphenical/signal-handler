@@ -33,11 +33,30 @@ namespace signals {
     /**
      * A signal handler that catches the signals from the operating system and safely
      * dispatches them to callbacks within the application context.
+     *
+     * The callback may take any desirable action except deleting the handler. It may
+     * safely deregister signals in order to stop listening to them and to restore the
+     * previous signal handler.
+     *
+     * If multiple signal handlers for the same signal are installed, the last set
+     * handlers callback will be notified only. If a signal is deregistered from a
+     * handler, the previously registered handler becomes active. The set of handlers for
+     * a specific signal number form a stack wherein always the top of the stack gets
+     * notifed of the signal only.
      */
     class Handler
     {
         public:
-            /** The signal handler callback */
+            /**
+             * The signal handler callback
+             *
+             * Destroying the handler within the execution of the callback results in
+             * undefined behaviour. It is however safe if the destruction of the handler
+             * is done in a separate thread. One could start and detach a thread that
+             * simply calls delete on the handler. A much better way is to use
+             * ::signals::Handler::removeSignal that can safely be used within the
+             * execution of the callback.
+             */
             using Sink = std::function<void (int)>;
 
         public:
