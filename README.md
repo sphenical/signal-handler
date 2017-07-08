@@ -1,3 +1,6 @@
+![Build Status](http://sphenic.ch:8080/buildStatus/icon?job=signal-handler)
+
+
 # signal-handler
 
 Applications often need a way to properly shutdown before execution ends. This includes
