@@ -279,7 +279,7 @@ namespace signals {
                 };
 
                 try {
-                    int nrFds = select (readFd_ + 1, &fds, nullptr, nullptr, &timeout);
+                    int nrFds = ::select (readFd_ + 1, &fds, nullptr, nullptr, &timeout);
                     if (nrFds < 0) {
                         throw ReadError {
                             "Cannot select on the signal pipes read file descriptor."};
