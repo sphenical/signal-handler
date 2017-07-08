@@ -13,7 +13,7 @@ option (SIGNALHANDLER_BUILD_SHARED_LIBS "Disable the build of the shared library
 option (SIGNALHANDLER_BUILD_TESTS "Enable testing." OFF)
 option (SIGNALHANDLER_DISABLE_INSTALLS "Disable all installation targets." OFF)
 option (SIGNALHANDLER_BUILD_DOCUMENTATION "Build the signal handler API documentation" OFF)
-option (SIGNALHANDLER_BUILD_EXAMPLES "Build the signal handler examples" ON)
+option (SIGNALHANDLER_BUILD_EXAMPLES "Build the signal handler examples" OFF)
 
 set (SIGNALHANDLER_NAME "signal-handler")
 set (SIGNALHANDLER_VENDOR "Sphenic Systems")
