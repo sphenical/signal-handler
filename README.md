@@ -70,9 +70,13 @@ the library contains of one single source file - you can add the following to yo
 set (SIGNALHANDLER_BUILD_SHARED_LIBS OFF CACHE BOOL "Don't build the signal handler shared library.")
 set (SIGNALHANDLER_DISABLE_INSTALLS ON CACHE BOOL "Don't install the signal handler library.")
 add_subdirectory (vendor/signal-handler)
-include_directories (SYSTEM vendor/signal-handler/src)
 
 ...
+# For instance an application myapp:
+include_directories (SYSTEM vendor/signal-handler/src)
+add_executable (myapp
+    ${MyApp_SOURCES})
+..
 # Later on, when linking the application:
 target_link_libraries (myapp signalhandler)
 ```

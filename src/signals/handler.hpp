@@ -60,10 +60,15 @@ namespace signals {
             using Sink = std::function<void (int)>;
 
         public:
+            template <typename Callback>
+                Handler (Callback&&);
+
             /**
              * A handler needs a valid callback.
              */
             Handler () = delete;
+
+            ~Handler ();
 
             /**
              * @{
@@ -75,11 +80,6 @@ namespace signals {
             Handler (Handler&&) = default;
             Handler& operator= (Handler&&) = default;
             /** @} */
-            
-            template <typename Callback>
-                Handler (Callback&&);
-
-            ~Handler ();
 
             Handler& addSignal (int);
             Handler& removeSignal (int);
