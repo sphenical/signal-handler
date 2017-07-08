@@ -54,11 +54,7 @@ void receiveSecondHandlerSig (int signum)
         << "In second handler, received signal: "
         << signum << std::endl;
 
-    secondHandler->removeSignal (signum);
-
-    // auto destroy = [&] () { secondHandler.reset (nullptr); };
-    // std::thread t {destroy};
-    // t.detach ();
+    secondHandler.reset (nullptr);
 }
 
 void receiveOtherHandlerSig (int signum, signals::Handler& handler)

@@ -33,6 +33,7 @@
 #include    <chrono>
 #include    <thread>
 #include    <atomic>
+#include    <set>
 
 #include    <unistd.h>
 #include    <sys/select.h>
@@ -42,6 +43,18 @@
 namespace signals {
 
     namespace {
+        using Signals = std::set<int>;
+        using Sink = Handler::Sink;
+    }
+
+    struct Handler::Handle
+    {
+        Signals sigs;
+    };
+
+    namespace {
+        using Handle = Handler::Handle;
+
         static constexpr const std::size_t MaxErrors = 5;
 
         class ReadError : public std::runtime_error
@@ -58,33 +71,33 @@ namespace signals {
         struct Dispatcher
         {
             struct sigaction ancestor;
-            const Handler* handler;
+            const Handle* handle;
 
-            Dispatcher (const Handler*);
+            Dispatcher (const Handle*);
         };
 
-        Dispatcher::Dispatcher (const Handler* h) :
+        Dispatcher::Dispatcher (const Handle* h) :
             ancestor {},
-            handler {h}
+            handle {h}
         {}
 
         class Registry
         {
             using Dispatchers = std::vector<Dispatcher>;
             using Handlers = std::map<int, Dispatchers>;
-            using Callables = std::map<const Handler*, Handler::Sink>;
+            using Callables = std::map<const Handle*, Sink>;
 
             public:
                 static Registry& instance ();
                 ~Registry ();
 
                 template <typename Func>
-                    Registry& addHandler (const Handler*, Func&&);
+                    Registry& addHandler (const Handle*, Func&&);
 
-                Registry& removeHandler (const Handler*);
+                Registry& removeHandler (const Handle*);
 
-                Registry& push (int, const Handler*);
-                Registry& pop (int, const Handler*);
+                Registry& push (int, const Handle*);
+                Registry& pop (int, const Handle*);
 
                 void handle (int);
 
@@ -166,19 +179,19 @@ namespace signals {
         }
 
         template <typename Func>
-            inline Registry& Registry::addHandler (const Handler* handler, Func&& func)
+            inline Registry& Registry::addHandler (const Handle* handle, Func&& func)
             {
-                callables_.emplace (handler, std::forward<Func> (func));
+                callables_.emplace (handle, std::forward<Func> (func));
                 return *this;
             }
 
-        inline Registry& Registry::removeHandler (const Handler* handler)
+        inline Registry& Registry::removeHandler (const Handle* handle)
         {
-            callables_.erase (handler);
+            callables_.erase (handle);
             return *this;
         }
 
-        Registry& Registry::push (int signum, const Handler* handler)
+        Registry& Registry::push (int signum, const Handle* handle)
         {
             struct sigaction action;
 
@@ -188,7 +201,7 @@ namespace signals {
             action.sa_flags = 0;
             sigfillset (&action.sa_mask);
 
-            Dispatcher dispatcher {handler};
+            Dispatcher dispatcher {handle};
 
             if (::sigaction (signum, &action, &dispatcher.ancestor) < 0) {
                 throw std::runtime_error {
@@ -218,7 +231,7 @@ namespace signals {
             }
         }
 
-        Registry& Registry::pop (int signum, const Handler* handler)
+        Registry& Registry::pop (int signum, const Handle* handle)
         {
             Handlers::iterator atHandler = handlers_.find (signum);
             if (atHandler != handlers_.end ()) {
@@ -228,7 +241,7 @@ namespace signals {
 
                 bool onTop = true;
                 while (onTop && atDispatcher != endOfDispatchers) {
-                    if (atDispatcher->handler == handler) {
+                    if (atDispatcher->handle == handle) {
 
                         ::sigaction (signum, &atDispatcher->ancestor, nullptr);
 
@@ -242,7 +255,7 @@ namespace signals {
                     }
                 }
                 while (atDispatcher != endOfDispatchers) {
-                    if (atDispatcher->handler == handler) {
+                    if (atDispatcher->handle == handle) {
 
                         auto previous = std::prev (atDispatcher);
                         previous->ancestor = std::move (atDispatcher->ancestor);
@@ -299,9 +312,9 @@ namespace signals {
                                 Dispatchers& dispatchers = atHandler->second;
 
                                 if (!dispatchers.empty ()) {
-                                    const Handler* handler = dispatchers.back ().handler;
+                                    const Handle* handle = dispatchers.back ().handle;
 
-                                    Callables::const_iterator atCallable = callables_.find (handler);
+                                    Callables::const_iterator atCallable = callables_.find (handle);
                                     if (atCallable != callables_.cend () && atCallable->second) {
                                         (atCallable->second) (signum);
                                     }
@@ -333,26 +346,32 @@ namespace signals {
     }
 
     /**
+     * Creates a signal handler.
+     * Registers the handler in the internal registry.
+     * @param callback the callback that takes the signal number as single argument 
+     */
+    Handler::Handler (Sink&& callback) :
+        handle_ {new Handle}
+    {
+        Registry::instance ()
+            .addHandler (handle_.get (), std::move (callback));
+    }
+
+    Handler::Handler (Handler&&) = default;
+    Handler& Handler::operator= (Handler&&) = default;
+
+    /**
      * Unregisters the handler from the internal registry.
      */
     Handler::~Handler ()
     {
         Registry& registry = Registry::instance ();
 
-        for (const auto sig : signals_) {
-            registry.pop (sig, this);
+        for (const auto sig : handle_->sigs) {
+            registry.pop (sig, handle_.get ());
         }
 
-        registry.removeHandler (this);
-    }
-
-    /**
-     * Registers the handler in the internal registry.
-     */
-    void Handler::start (Sink&& callback)
-    {
-        Registry::instance ()
-            .addHandler (this, std::move (callback));
+        registry.removeHandler (handle_.get ());
     }
 
     /**
@@ -365,11 +384,11 @@ namespace signals {
      */
     Handler& Handler::addSignal (int signum)
     {
-        Signals::const_iterator atSignal = signals_.find (signum);
+        Signals::const_iterator atSignal = handle_->sigs.find (signum);
 
-        if (atSignal == signals_.cend ()) {
-            Registry::instance ().push (signum, this);
-            signals_.insert (signum);
+        if (atSignal == handle_->sigs.cend ()) {
+            Registry::instance ().push (signum, handle_.get ());
+            handle_->sigs.insert (signum);
         }
 
         return *this;
@@ -385,14 +404,23 @@ namespace signals {
      */
     Handler& Handler::removeSignal (int signum)
     {
-        Signals::const_iterator atSignal = signals_.find (signum);
+        Signals::const_iterator atSignal = handle_->sigs.find (signum);
 
-        if (atSignal != signals_.cend ()) {
-            Registry::instance ().pop (signum, this);
-            signals_.erase (atSignal);
+        if (atSignal != handle_->sigs.cend ()) {
+            Registry::instance ().pop (signum, handle_.get ());
+            handle_->sigs.erase (atSignal);
         }
 
         return *this;
     }
+
+    /**
+     * Returns true iff the given signal signum is listened to, iff the signal with
+     * the given number is delivered to the callback.
+     * @param signum the signal in question
+     * @return true iff the given signal signum is listened to
+     */
+    bool Handler::listensOn (int signum) const
+    { return handle_->sigs.find (signum) != handle_->sigs.cend (); }
 }
 
