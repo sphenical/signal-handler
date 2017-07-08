@@ -77,7 +77,7 @@ target_link_libraries (myapp signalhandler)
 In order to checkout the library on the subfolder `vendor/` as sub tree for instance, the
 following can be issued:
 ```git
-git remote add signal-handler https://github.com/sphenical/signal-handler
+git remote add signal-handler https://github.com/sphenical/signal-handler.git
 git subtree add --prefix vendor/signal-handler signal-handler master --squash
 ```
 
