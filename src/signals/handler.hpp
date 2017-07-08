@@ -26,7 +26,7 @@
 #define SIGNALS_HANDLER_INC
 
 #include    <functional>
-#include    <set>
+#include    <memory>
 
 namespace signals {
 
@@ -34,14 +34,16 @@ namespace signals {
      * A signal handler that catches the signals from the operating system and safely
      * dispatches them to callbacks within the application context.
      *
-     * The callback may take any desirable action except deleting the handler. It may
-     * safely deregister signals in order to stop listening to them and to restore the
-     * previous signal handler.
+     * The callback may take any desirable action. It may safely deregister signals in
+     * order to stop listening to them and to restore the previous signal handler. It is
+     * also no problem to delete the handler during the execution of the callback, this
+     * causes the handler to deregister itself for all registered signals and deregister
+     * itself from the main registry.
      *
      * If multiple signal handlers for the same signal are installed, the last set
      * handlers callback will be notified only. If a signal is deregistered from a
      * handler, the previously registered handler becomes active. The set of handlers for
-     * a specific signal number form a stack wherein always the top of the stack gets
+     * a specific signal number form a stack wherein always the top of all handlers gets
      * notifed of the signal only.
      */
     class Handler
@@ -59,15 +61,13 @@ namespace signals {
              */
             using Sink = std::function<void (int)>;
 
+            struct Handle;
+
         public:
             template <typename Callback>
                 Handler (Callback&&);
 
-            /**
-             * A handler needs a valid callback.
-             */
-            Handler () = delete;
-
+            Handler (Sink&&);
             ~Handler ();
 
             /**
@@ -77,22 +77,16 @@ namespace signals {
             Handler (const Handler&) = delete;
             Handler& operator= (const Handler&) = delete;
 
-            Handler (Handler&&) = default;
-            Handler& operator= (Handler&&) = default;
+            Handler (Handler&&);
+            Handler& operator= (Handler&&);
             /** @} */
 
             Handler& addSignal (int);
             Handler& removeSignal (int);
-            bool listens (int) const;
+            bool listensOn (int) const;
 
         private:
-            void start (Sink&&);
-
-        private:
-            using Signals = std::set<int>;
-
-        private:
-            Signals signals_;
+            std::unique_ptr<Handle> handle_;
     };
 
     /**
@@ -102,17 +96,8 @@ namespace signals {
      */
     template <typename Callback>
         inline Handler::Handler (Callback&& callback) :
-            signals_ {}
-        { start (Sink {std::forward<Callback> (callback)}); }
-
-        /**
-         * Returns true iff the given signal signum is listened to, iff the signal with
-         * the given number is delivered to the callback.
-         * @param signum the signal in question
-         * @return true iff the given signal signum is listened to
-         */
-        inline bool Handler::listens (int signum) const
-        { return signals_.find (signum) != signals_.cend (); }
+            Handler (Sink {std::forward<Callback> (callback)})
+        {}
 }
 
 #endif /* SIGNALS_HANDLER_INC */
