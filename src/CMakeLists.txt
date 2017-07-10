@@ -9,10 +9,10 @@ include_directories (SYSTEM
 ## Sources
 ##########
 set (SIGNALHANDLER_SOURCES
-    signals/handler.cpp)
+    sig/handler.cpp)
 
 set (SIGNALHANDLER_INSTALL_HEADERS
-    signals/handler.hpp)
+    sig/handler.hpp)
 
 #####################
 # Include directories
@@ -50,7 +50,7 @@ if (NOT ${SIGNALHANDLER_DISABLE_INSTALLS})
         RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     install (FILES ${SIGNALHANDLER_INSTALL_HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/signals)
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sig)
 
 endif ()
 

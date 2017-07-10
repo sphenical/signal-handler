@@ -25,7 +25,7 @@
 #include    <cstdlib>
 #include    <iostream>
 
-#include    <signals/handler.hpp>
+#include    <sig/handler.hpp>
 #include    <csignal>
 
 #include    <atomic>
@@ -34,10 +34,10 @@
 #include    <memory>
 
 static std::atomic_bool running {true};
-static std::unique_ptr<signals::Handler> secondHandler;
+static std::unique_ptr<sig::Handler> secondHandler;
 
 static void staticHandlerFunc (int);
-static signals::Handler staticHandler {&staticHandlerFunc};
+static sig::Handler staticHandler {&staticHandlerFunc};
 
 void staticHandlerFunc (int signum)
 {
@@ -57,7 +57,7 @@ void receiveSecondHandlerSig (int signum)
     secondHandler.reset (nullptr);
 }
 
-void receiveOtherHandlerSig (int signum, signals::Handler& handler)
+void receiveOtherHandlerSig (int signum, sig::Handler& handler)
 {
     std::cout
         << "In other handler, received signal: "
@@ -84,20 +84,20 @@ void wasteTime ()
 int main ()
 {
     std::thread worker {&wasteTime};
-    signals::Handler handler {&receiveSignalInApp};
+    sig::Handler handler {&receiveSignalInApp};
 
     handler
         .addSignal (SIGTERM)
         .addSignal (SIGINT);
 
     secondHandler.reset (
-            new signals::Handler {&receiveSecondHandlerSig});
+            new sig::Handler {&receiveSecondHandlerSig});
 
     secondHandler
         ->addSignal (SIGTERM);
         // .addSignal (SIGINT);
 
-    signals::Handler otherHandler {
+    sig::Handler otherHandler {
         std::bind (
                 &receiveOtherHandlerSig,
                 std::placeholders::_1,

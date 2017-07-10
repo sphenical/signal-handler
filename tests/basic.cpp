@@ -1,4 +1,4 @@
-#include    <signals/handler.hpp>
+#include    <sig/handler.hpp>
 #include    <csignal>
 
 #include    <gtest/gtest.h>
@@ -26,7 +26,7 @@ TEST (basic, triggerAndCatchSignal)
     Counter counter;
     std::future<int> result = counter.sig.get_future ();
 
-    signals::Handler handler {
+    sig::Handler handler {
         std::bind (&Counter::onSignal, std::ref (counter), std::placeholders::_1)};
 
     handler.addSignal (SIGINT);
