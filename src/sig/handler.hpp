@@ -28,7 +28,7 @@
 #include    <functional>
 #include    <memory>
 
-namespace signals {
+namespace sig {
 
     /**
      * A signal handler that catches the signals from the operating system and safely
@@ -56,7 +56,7 @@ namespace signals {
              * undefined behaviour. It is however safe if the destruction of the handler
              * is done in a separate thread. One could start and detach a thread that
              * simply calls delete on the handler. A much better way is to use
-             * ::signals::Handler::removeSignal that can safely be used within the
+             * ::sig::Handler::removeSignal that can safely be used within the
              * execution of the callback.
              */
             using Sink = std::function<void (int)>;
@@ -91,7 +91,7 @@ namespace signals {
 
     /**
      * Creates a signal handler.
-     * @tparam a Callable with the signature of ::signals::Handler::Sink
+     * @tparam a Callable with the signature of ::sig::Handler::Sink
      * @param callback the callback that takes the signal number as single argument 
      */
     template <typename Callback>

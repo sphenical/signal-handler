@@ -22,7 +22,7 @@
  * This is free software, and you are welcome to redistribute it
  * under certain conditions.
  */
-#include    <signals/handler.hpp>
+#include    <sig/handler.hpp>
 
 #include    <cstdint>
 #include    <limits>
@@ -40,7 +40,7 @@
 #include    <signal.h>
 #include    <fcntl.h>
 
-namespace signals {
+namespace sig {
 
     namespace {
         using Signals = std::set<int>;
@@ -367,8 +367,8 @@ namespace signals {
     {
         Registry& registry = Registry::instance ();
 
-        for (const auto sig : handle_->sigs) {
-            registry.pop (sig, handle_.get ());
+        for (const auto s : handle_->sigs) {
+            registry.pop (s, handle_.get ());
         }
 
         registry.removeHandler (handle_.get ());
