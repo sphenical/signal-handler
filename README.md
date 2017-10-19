@@ -1,6 +1,5 @@
 ![Build Status](https://sphenic.ch/jenkins/buildStatus/icon?job=signal-handler)
 
-
 # signal-handler
 
 Applications often need a way to properly shutdown before execution ends. This includes
@@ -38,7 +37,7 @@ handler.
 
 A typical usage scenario looks like the following example.
 ```cpp
-#include <signals/handler.hpp>
+#include <sig/handler.hpp>
 #include <csignal>
 
 #include "MyApp.hpp"
@@ -47,7 +46,7 @@ int main ()
 {
     MyApp myApp;
     ...
-    signals::Handler handler {
+    sig::Handler handler {
         std::bind (
             &MyApp::onSignal, &myApp, std::placeholders::_1)};
 
