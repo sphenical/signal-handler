@@ -1,6 +1,6 @@
-![Build Status](https://sphenic.ch/jenkins/buildStatus/icon?job=signal-handler)
-
 # signal-handler
+
+![Build Status](https://sphenic.ch/jenkins/buildStatus/icon?job=signal-handler)
 
 Applications often need a way to properly shutdown before execution ends. This includes
 closing of file descriptors, joining running threads and running all other kind of cleanup
