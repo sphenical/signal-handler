@@ -1,4 +1,4 @@
-![Build Status](http://sphenic.ch:8080/buildStatus/icon?job=signal-handler)
+![Build Status](https://sphenic.ch/jenkins/buildStatus/icon?job=signal-handler)
 
 
 # signal-handler
