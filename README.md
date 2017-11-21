@@ -35,6 +35,10 @@ std::function<void (int)>
 Anything convertible to this type can be provided as a constructor argument to a signal
 handler.
 
+The total of all handlers is stored on a stack per signal number, only the top handler is
+executed if the corresponding signal is emitted. If the top handler for a given signal is
+removed, the next top handler on the stack gets active until there is no more handler.
+
 A typical usage scenario looks like the following example.
 ```cpp
 #include <sig/handler.hpp>
