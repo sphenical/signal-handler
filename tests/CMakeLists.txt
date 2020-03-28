@@ -1,58 +1,36 @@
 project (signal-handler-tests)
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required (VERSION 3.13)
 
 enable_testing ()
 
-########
-## GTest
-########
-find_path (GTEST_INCLUDE_DIR NAMES gtest/gtest.h)
-find_library (GTEST_LIBRARY NAMES gtest gtest_main)
-find_package_handle_standard_args (gtest DEFAULT_MSG
-    GTEST_LIBRARY GTEST_INCLUDE_DIR)
-mark_as_advanced (GTEST_LIBRARY GTEST_INCLUDE_DIR)
-set (GTEST_LIBRARIES ${GTEST_LIBRARY})
-set (GTEST_INCLUDE_DIRS ${GTEST_INCLUDE_DIR})
+find_package (GTest REQUIRED CONFIG)
+include (GoogleTest)
 
-if (NOT ${GTEST_FOUND})
-    message (FATAL_ERROR "Cannot find the gtest library.")
-endif ()
-
-######################
-## Include directories
-######################
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (SYSTEM
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_BINARY_DIR}/src
-    ${GTEST_INCLUDE_DIRS})
-
-########
-## Tests
-########
-set (TEST_SOURCES
-    runner.cpp
-    basic.cpp)
-
-##########
-## Targets
-##########
-add_executable (runtests EXCLUDE_FROM_ALL ${TEST_SOURCES})
+add_executable (runtests EXCLUDE_FROM_ALL)
+target_sources (runtests
+    PRIVATE
+        runner.cpp
+        basic.cpp
+)
 
 target_link_libraries (runtests
-    signalhandler
-    ${GTEST_LIBRARIES})
+    PRIVATE
+        signalhandler::signalhandler
+        GTest::gtest
+        GTest::gmock
+        GTest::gmock_main
+)
 
 set_target_properties (runtests
     PROPERTIES
-        CXX_STANDARD 11)
+        CXX_STANDARD 11
+)
 
-#######
-## Test
-#######
-add_test (NAME alltests
-    COMMAND runtests --gtest_output=xml:${CMAKE_BINARY_DIR}/signals_testresults.xml
-    WORKING_DIRECTORY $<TARGET_FILE_DIR:runtests>)
+file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/results)
+gtest_discover_tests (runtests
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:runtests>
+    XML_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/results
+)
 
 #############################################
 ## Command "check" instead of "test",

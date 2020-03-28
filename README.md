@@ -76,13 +76,13 @@ add_subdirectory (vendor/signal-handler)
 
 ...
 # For instance an application myapp:
-include_directories (SYSTEM
-    ${CMAKE_SOURCE_DIR}/vendor/signal-handler/src)
-add_executable (myapp
-    ${MyApp_SOURCES})
+add_executable (myapp)
+target_sources (myapp
+    PRIVATE
+        MyApp.cpp
+)
 ..
-# Later on, when linking the application:
-target_link_libraries (myapp signalhandler)
+target_link_libraries (myapp signalhandler::signalhandler)
 ```
 
 In order to checkout the library on the subfolder `vendor/` as sub tree for instance, the

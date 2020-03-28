@@ -1,30 +1,25 @@
 project (signal-handler-examples)
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required (VERSION 3.13)
 
-include_directories (SYSTEM
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_BINARY_DIR}/src)
-
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-
-set (SIGNALHANDLER_EXAMPLES)
-
-add_executable (sighandle-example
-    sighandle.cpp)
+add_executable (sighandle-example)
+target_sources (sighandle-example
+    PRIVATE
+        sighandle.cpp
+)
 
 target_link_libraries (sighandle-example
-    signalhandler)
-
-list (APPEND SIGNALHANDLER_EXAMPLES sighandle-example)
+    PRIVATE
+        signalhandler::signalhandler
+)
 
 set_target_properties (
-    ${SIGNALHANDLER_EXAMPLES}
+    sighandle-example
     PROPERTIES
         CXX_STANDARD 11)
 
-if (NOT ${SIGNALHANDLER_DISABLE_INSTALLS})
+if (NOT SIGNALHANDLER_DISABLE_INSTALLS)
     install (TARGETS
-        ${SIGNALHANDLER_EXAMPLES}
+        sighandle-example
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif ()
 
