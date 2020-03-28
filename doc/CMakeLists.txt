@@ -1,5 +1,5 @@
 project (signal-handler-docs)
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required (VERSION 3.13)
 
 include (FindDoxygen)
 if (NOT ${DOXYGEN_FOUND})
